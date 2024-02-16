@@ -1,16 +1,28 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopractice-bookingapp/helper"
+	"log"
+	"net/http"
 	"sync"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 	const conferenceTickets = 50
 	var conferenceName = "Go Conference"
 	var remainingTickets uint = 50 
 	var bookings = make([]UserData, 0)
+
+
+	type ConferenceInfo struct {
+		ConferenceName string
+		TotalTickets uint
+		TicketsLeft uint
+	}
 
 	type UserData struct {
 		firstName string
@@ -22,7 +34,10 @@ import (
 	var wg = sync.WaitGroup{}
 
 func main() {
-	
+	r := mux.NewRouter()
+
+	r.HandleFunc("/conference", getConferenceDetails).Methods("GET")
+	log.Fatal(http.ListenAndServe(":8000", r))
 
 	greetUsers()
 
@@ -76,10 +91,21 @@ func bookTickets(remainingTickets uint, userTickets uint, firstName string, last
 return bookings, remainingTickets
 }
 
-func greetUsers() {
-	fmt.Printf("Welcome to the %v booking application\n", conferenceName)
-	fmt.Printf("Only %v tickets left out of %v spots\n", remainingTickets, conferenceTickets )
-	fmt.Println("Get your tickets here to attend")
+func getConferenceDetails( w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	response:= ConferenceInfo{
+		ConferenceName: conferenceName,
+		TotalTickets: conferenceTickets,
+		TicketsLeft: remainingTickets,
+	}
+json.NewEncoder(w).Encode(response)
+}
+
+func greetUsers() string {
+	ticketInfo := fmt.Sprintf("Welcome to the %v booking application\n", conferenceName)
+	ticketInfo += fmt.Sprintf("Only %v tickets left out of %v spots\n", remainingTickets, conferenceTickets)
+	ticketInfo += "Get your tickets here to attend\n"
+	return ticketInfo
 }
 
 func getFirstNames()[]string {
