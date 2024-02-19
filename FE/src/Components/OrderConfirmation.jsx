@@ -7,7 +7,6 @@ function OrderConfirmation() {
   useEffect(() => {
     getBookings().then((response) => {
       setBookings(response.data);
-      console.log(bookings);
     });
   }, []);
 

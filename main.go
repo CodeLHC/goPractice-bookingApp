@@ -23,10 +23,10 @@ import (
 	}
 
 	type UserData struct {
-		FirstName string
-		LastName string
-		Email string
-		NumberOfTickets uint
+		FirstName string `json:"firstName"`
+		LastName string `json:"lastName"`
+		Email string `json:"email"`
+		NumberOfTickets uint `json:"numberOfTickets"`
 	}
 
 	var wg = sync.WaitGroup{}
@@ -96,16 +96,21 @@ json.NewEncoder(w).Encode(response)
 func getBookings( w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-	bookings, remainingTickets = bookTickets(remainingTickets, 2, "laura", "Crawford", "laura@")
-	bookings, remainingTickets = bookTickets(remainingTickets, 1, "david", "el", "d@el")
-json.NewEncoder(w).Encode(bookings)
+	json.NewEncoder(w).Encode(bookings)
 }
 
 func postTicketsOrder(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
+
 	var order UserData
-	_ = json.NewDecoder(r.Body).Decode((&order))
+	err := json.NewDecoder(r.Body).Decode(&order)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	bookings, remainingTickets = bookTickets(remainingTickets, order.NumberOfTickets, order.FirstName, order.LastName, order.Email)
+	json.NewEncoder(w).Encode(bookings)
 }
 
 func getUserInput()(string, string, string, uint){
