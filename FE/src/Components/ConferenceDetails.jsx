@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { getConferenceDetails } from "../requests/api";
 
 import axios from "axios";
+
+const bookTicketsButton = <button>Book Now</button>;
 
 function ConferenceDetails() {
   const [conferenceInfo, setConferenceInfo] = useState(null);
@@ -11,8 +14,6 @@ function ConferenceDetails() {
       setConferenceInfo(response.data);
     });
   }, []);
-
-  console.log(conferenceInfo);
 
   return (
     <>
@@ -25,6 +26,7 @@ function ConferenceDetails() {
       ) : (
         <p>Loading...</p>
       )}
+      <Link to="/order">{bookTicketsButton}</Link>
     </>
   );
 }
