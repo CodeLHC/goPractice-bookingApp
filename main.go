@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -17,7 +16,6 @@ import (
 	var remainingTickets uint = 50 
 	var bookings = make([]UserData, 0)
 
-
 	type ConferenceInfo struct {
 		ConferenceName string
 		TotalTickets uint
@@ -25,10 +23,10 @@ import (
 	}
 
 	type UserData struct {
-		firstName string
-		lastName string
-		email string
-		numberOfTickets uint
+		FirstName string
+		LastName string
+		Email string
+		NumberOfTickets uint
 	}
 
 	var wg = sync.WaitGroup{}
@@ -37,11 +35,9 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/conference", getConferenceDetails).Methods("GET")
+	r.HandleFunc("/bookings", getBookings).Methods("GET")
+	r.HandleFunc("/order", postTicketsOrder).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8000", r))
-
-	greetUsers()
-
-	fmt.Printf("conferenceTickets is %T, remainingTickets is %T, conferenceName is %T\n", conferenceTickets, remainingTickets, conferenceName)
 
 	
 		firstName, lastName, email, userTickets := getUserInput()
@@ -50,10 +46,8 @@ func main() {
 		if isValidName && isValidEmail && isValidTicketNumber{
 			bookings, remainingTickets = bookTickets(remainingTickets, userTickets, firstName, lastName, email)
 			wg.Add(1)
-			go sendTicket(userTickets, firstName, lastName, email)
+			// go sendTicket(userTickets, firstName, lastName, email)
 
-		firstNames:= getFirstNames()
-		fmt.Printf("The first names of bookings are: %v\n", firstNames)
 
 		if remainingTickets == 0 {
 			fmt.Println("Our conference is booked out. Come back next year")
@@ -72,22 +66,19 @@ func main() {
 		wg.Wait()
 	}
 
+
+
 func bookTickets(remainingTickets uint, userTickets uint, firstName string, lastName string, email string) ([]UserData, uint){
 	remainingTickets = remainingTickets - userTickets
 
 	var userData = UserData {
-		firstName: firstName,
-		lastName: lastName,
-		email: email,
-		numberOfTickets: userTickets,
+		FirstName: firstName,
+		LastName: lastName,
+		Email: email,
+		NumberOfTickets: userTickets,
 	}
 
-
 	bookings = append(bookings, userData)
-	fmt.Printf("list of bookings is %v\n", bookings)
-
-	fmt.Printf("Thank you %v %v, for booking %v tickets. You will receive a confirmation email at %v\n", firstName, lastName, userTickets, email)
-	fmt.Printf("%v tickets remaining for the %v", remainingTickets, conferenceName)
 return bookings, remainingTickets
 }
 
@@ -102,20 +93,19 @@ func getConferenceDetails( w http.ResponseWriter, r *http.Request) {
 json.NewEncoder(w).Encode(response)
 }
 
-func greetUsers() string {
-	ticketInfo := fmt.Sprintf("Welcome to the %v booking application\n", conferenceName)
-	ticketInfo += fmt.Sprintf("Only %v tickets left out of %v spots\n", remainingTickets, conferenceTickets)
-	ticketInfo += "Get your tickets here to attend\n"
-	return ticketInfo
+func getBookings( w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	bookings, remainingTickets = bookTickets(remainingTickets, 2, "laura", "Crawford", "laura@")
+	bookings, remainingTickets = bookTickets(remainingTickets, 1, "david", "el", "d@el")
+json.NewEncoder(w).Encode(bookings)
 }
 
-func getFirstNames()[]string {
-	firstNames := []string{}
-		for _, booking := range bookings{
-			 firstNames = append(firstNames, booking.firstName)
-		}
-		return firstNames
-		
+func postTicketsOrder(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	var order UserData
+	_ = json.NewDecoder(r.Body).Decode((&order))
 }
 
 func getUserInput()(string, string, string, uint){
@@ -139,12 +129,12 @@ func getUserInput()(string, string, string, uint){
 		return firstName, lastName, email, userTickets
 }
 
-func sendTicket(userTickets uint, firstName string, lastName string, email string){
-	time.Sleep(10 * time.Second)
-	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName)
-	fmt.Println("#################")
-	fmt.Printf("Sending tickets:\n %v \nto email address %v", ticket, email)
-	fmt.Println("#################")
-	wg.Done()
-}
+// func sendTicket(userTickets uint, firstName string, lastName string, email string){
+// 	time.Sleep(10 * time.Second)
+// 	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName)
+// 	fmt.Println("#################")
+// 	fmt.Printf("Sending tickets:\n %v \nto email address %v", ticket, email)
+// 	fmt.Println("#################")
+// 	wg.Done()
+// }
 
