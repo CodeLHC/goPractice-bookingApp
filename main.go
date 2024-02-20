@@ -2,12 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"gopractice-bookingapp/helper"
 	"log"
 	"net/http"
-	"sync"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -23,13 +21,14 @@ import (
 	}
 
 	type UserData struct {
+		OrderID string `json:"orderId"`
 		FirstName string `json:"firstName"`
 		LastName string `json:"lastName"`
 		Email string `json:"email"`
 		NumberOfTickets uint `json:"numberOfTickets"`
 	}
 
-	var wg = sync.WaitGroup{}
+	// var wg = sync.WaitGroup{}
 
 func main() {
 	r := mux.NewRouter()
@@ -40,38 +39,39 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8000", r))
 
 	
-		firstName, lastName, email, userTickets := getUserInput()
-		isValidName, isValidEmail, isValidTicketNumber := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
+		// firstName, lastName, email, userTickets := getUserInput()
+		// isValidName, isValidEmail, isValidTicketNumber := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
 
-		if isValidName && isValidEmail && isValidTicketNumber{
-			bookings, remainingTickets = bookTickets(remainingTickets, userTickets, firstName, lastName, email)
-			wg.Add(1)
-			// go sendTicket(userTickets, firstName, lastName, email)
+		// if isValidName && isValidEmail && isValidTicketNumber{
+		// 	bookings, remainingTickets = bookTickets(remainingTickets, userTickets, firstName, lastName, email, orderId)
+		// 	wg.Add(1)
+		// 	// go sendTicket(userTickets, firstName, lastName, email)
 
 
-		if remainingTickets == 0 {
-			fmt.Println("Our conference is booked out. Come back next year")
-		}
-		} else {
-			if !isValidName{
-				fmt.Print("First name or last name you entered is too short\n")
-			}
-			if !isValidEmail{
-				fmt.Print("Email address you entered does not contain an @ sign\n")
-			}
-			if !isValidTicketNumber{
-				fmt.Print("The number of tickets you've entered is invalid\n")
-			}
-		}
-		wg.Wait()
+		// if remainingTickets == 0 {
+		// 	fmt.Println("Our conference is booked out. Come back next year")
+		// }
+		// } else {
+		// 	if !isValidName{
+		// 		fmt.Print("First name or last name you entered is too short\n")
+		// 	}
+		// 	if !isValidEmail{
+		// 		fmt.Print("Email address you entered does not contain an @ sign\n")
+		// 	}
+		// 	if !isValidTicketNumber{
+		// 		fmt.Print("The number of tickets you've entered is invalid\n")
+		// 	}
+		// }
+		// wg.Wait()
 	}
 
 
 
-func bookTickets(remainingTickets uint, userTickets uint, firstName string, lastName string, email string) ([]UserData, uint){
+func bookTickets(remainingTickets uint, userTickets uint, firstName string, lastName string, email string, orderID string) ([]UserData, uint){
 	remainingTickets = remainingTickets - userTickets
 
 	var userData = UserData {
+		OrderID: orderID,
 		FirstName: firstName,
 		LastName: lastName,
 		Email: email,
@@ -109,30 +109,33 @@ func postTicketsOrder(w http.ResponseWriter, r *http.Request){
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	bookings, remainingTickets = bookTickets(remainingTickets, order.NumberOfTickets, order.FirstName, order.LastName, order.Email)
+
+	orderID:= uuid.New().String()
+	order.OrderID = orderID
+	bookings, remainingTickets = bookTickets(remainingTickets, order.NumberOfTickets, order.FirstName, order.LastName, order.Email, order.OrderID)
 	json.NewEncoder(w).Encode(bookings)
 }
 
-func getUserInput()(string, string, string, uint){
-	var firstName string
-		var lastName string
-		var email string
-		var userTickets uint
+// func getUserInput()(string, string, string, uint){
+// 	var firstName string
+// 		var lastName string
+// 		var email string
+// 		var userTickets uint
 
-		fmt.Println("Enter your first name: ")
-		fmt.Scan(&firstName)
+// 		fmt.Println("Enter your first name: ")
+// 		fmt.Scan(&firstName)
 
-		fmt.Println("Enter your last name: ")
-		fmt.Scan(&lastName)
+// 		fmt.Println("Enter your last name: ")
+// 		fmt.Scan(&lastName)
 
-		fmt.Println("Enter your email address: ")
-		fmt.Scan(&email)
+// 		fmt.Println("Enter your email address: ")
+// 		fmt.Scan(&email)
 
-		fmt.Println("Enter amount of tickets: ")
-		fmt.Scan(&userTickets)
+// 		fmt.Println("Enter amount of tickets: ")
+// 		fmt.Scan(&userTickets)
 
-		return firstName, lastName, email, userTickets
-}
+// 		return firstName, lastName, email, userTickets
+// }
 
 // func sendTicket(userTickets uint, firstName string, lastName string, email string){
 // 	time.Sleep(10 * time.Second)

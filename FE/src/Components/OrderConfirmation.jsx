@@ -7,6 +7,7 @@ function OrderConfirmation() {
   useEffect(() => {
     getBookings().then((response) => {
       setBookings(response.data);
+      console.log({ response });
     });
   }, []);
 
@@ -18,7 +19,7 @@ function OrderConfirmation() {
       <div>
         {bookings &&
           bookings.map((booking) => {
-            return <p key={booking.FirstName}>{booking.FirstName}</p>;
+            return <p key={booking.orderID}>{booking.firstName}</p>;
           })}
         {!bookings && <p>Loading...</p>}
       </div>
