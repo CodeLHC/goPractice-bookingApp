@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -35,6 +36,7 @@ func main() {
 
 	r.HandleFunc("/conference", getConferenceDetails).Methods("GET")
 	r.HandleFunc("/bookings", getBookings).Methods("GET")
+	// r.HandleFunc("/order", handleOptions)
 	r.HandleFunc("/order", postTicketsOrder).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8000", r))
 
@@ -99,9 +101,25 @@ func getBookings( w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(bookings)
 }
 
+// func handleOptions(w http.ResponseWriter, r *http.Request) {
+//    w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+//  w.WriteHeader(http.StatusOK)
+// }
+
+
 func postTicketsOrder(w http.ResponseWriter, r *http.Request){
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
+	fmt.Println("request method:", r)
+	   
+
+    // Respond with OK status
+    w.WriteHeader(http.StatusOK)
+	(w).Header().Set("Content-Type", "application/json")
+	 w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	var order UserData
 	err := json.NewDecoder(r.Body).Decode(&order)
@@ -109,6 +127,11 @@ func postTicketsOrder(w http.ResponseWriter, r *http.Request){
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+
+   
+fmt.Println(w, "order: %+v", order)
+
 
 	orderID:= uuid.New().String()
 	order.OrderID = orderID
