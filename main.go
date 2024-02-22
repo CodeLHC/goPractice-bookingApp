@@ -98,14 +98,17 @@ func postTicketsOrder(w http.ResponseWriter, r *http.Request){
 	bookings, remainingTickets, bookingErrorMessage = bookTickets(remainingTickets, order.NumberOfTickets, order.FirstName, order.LastName, order.Email, order.OrderID)
 	
 	 var response interface{}
+	 var statusCode int
 
     if bookingErrorMessage != "" {
+		statusCode = http.StatusBadRequest
         response = struct {
             Error *BookingError `json:"error"`
         }{
             Error: &BookingError{Message: bookingErrorMessage},
         }
     } else {
+		statusCode = http.StatusOK
         response = struct {
             UserData        UserData `json:"order"`
             RemainingTickets uint     `json:"remainingTickets"`
@@ -115,7 +118,7 @@ func postTicketsOrder(w http.ResponseWriter, r *http.Request){
         }
     }
 
-	
+	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(response)
 }
 
