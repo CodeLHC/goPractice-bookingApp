@@ -37,7 +37,6 @@ import (
 
 func main() {
 	r := mux.NewRouter()
-
 	r.HandleFunc("/conference", getConferenceDetails).Methods("GET")
 	r.HandleFunc("/bookings", getBookings).Methods("GET")
 	r.HandleFunc("/order", postTicketsOrder).Methods("POST")
