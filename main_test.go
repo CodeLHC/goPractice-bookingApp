@@ -1,10 +1,17 @@
 package main
 
-// import (
-//     // "errors"
-//     // "net/http"
-//     // "net/http/httptest"
-//     // "testing"
+import (
+	"testing"
+)
 
-//     // "github.com/stretchr/testify/assert"
-// )
+
+func ListenAndServe(addr string, handler Handler) error
+
+
+type Handler interface {
+	ServeHTTP(ResponseWriter, *Request)
+}
+
+func TestgetConferenceDetails(t *testing.T) {
+t.Run()
+}
